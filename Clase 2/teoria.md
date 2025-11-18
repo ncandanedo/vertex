@@ -1,6 +1,5 @@
 # Sesión 2 — Introducción a Vertex AI
 
-> Contenido de teoría alineado con el **Tema 2** del temario del curso de AIOps con Vertex AI. Basado en el esquema oficial del temario (Tema 2: *Introducción a Vertex AI*).
 
 ## 1. ¿Qué es Vertex AI?
 Vertex AI es la plataforma unificada de machine learning de Google Cloud que permite **preparar datos, entrenar modelos, desplegar predicciones y operar MLOps** desde un mismo entorno. Su objetivo es reducir el tiempo de puesta en producción, estandarizar procesos y facilitar la gobernanza de modelos en escala.
@@ -79,3 +78,4 @@ Características clave:
 - **Model Registry** como fuente de verdad: versiones con **artefactos, métricas, permisos y estados** (staging/production).
 - **Lineage**: trazabilidad de datasets, pipelines y modelos (cumplimiento y auditoría).
 - **Promoción controlada**: *gates* de calidad, *rollbacks* rápidos, y *blue/green* en Endpoints.
+
