@@ -79,3 +79,7 @@ Características clave:
 - **Lineage**: trazabilidad de datasets, pipelines y modelos (cumplimiento y auditoría).
 - **Promoción controlada**: *gates* de calidad, *rollbacks* rápidos, y *blue/green* en Endpoints.
 
+
+## 11. Fin
+Examen: https://forms.gle/r83hcynhSC64SrB16
+FeedBack: (https://imagina-formacion.typeform.com/to/IkO83DnN)
