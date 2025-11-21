@@ -17,7 +17,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.sdk.resources import Resource
-
+from opentelemetry.resourcedetector.gcp import GoogleCloudResourceDetector
 app = Flask(__name__)
 
 # Configuración de Logging básico
@@ -40,27 +40,39 @@ def init_gcp_profiler():
         else:
             logger.warning("⚠️ Librería google-cloud-profiler no instalada.")
 
+
 def init_cloud_trace():
-    """Inicializa Cloud Trace (OpenTelemetry) si la variable lo permite."""
+    """Inicializa Cloud Trace (OpenTelemetry) con detección de recursos."""
     if os.environ.get("ENABLE_TRACING") == "true":
         try:
-            # Configurar el exportador para Google Cloud Trace
+            # 1. Detectar automáticamente el entorno de GCP (Cloud Run)
+            # Esto llena atributos como cloud.platform, cloud.region, host.id, etc.
+            gcp_resource = GoogleCloudResourceDetector(raise_on_error=False).detect()
+
+            # 2. Definir explícitamente el nombre del servicio
+            # Fusionamos (merge) el recurso detectado con nuestro nombre manual
+            service_resource = Resource.create({
+                "service.name": os.environ.get("K_SERVICE", "mi-flask-observability"),
+                "service.version": os.environ.get("K_REVISION", "1.0.0")
+            })
+            final_resource = gcp_resource.merge(service_resource)
+
+            # Configurar el exportador
             exporter = CloudTraceSpanExporter()
             
-            # Proveedor de trazas con el recurso identificado
-            tracer_provider = TracerProvider(
-                resource=Resource.create({"service.name": os.environ.get("K_SERVICE", "mi-flask-api")})
-            )
+            # Usar el recurso combinado en el Provider
+            tracer_provider = TracerProvider(resource=final_resource)
+            
             tracer_provider.add_span_processor(BatchSpanProcessor(exporter))
             trace.set_tracer_provider(tracer_provider)
             
-            # Instrumentar Flask automáticamente
+            # Instrumentar Flask
             FlaskInstrumentor().instrument_app(app)
             
-            logger.info("✅ Google Cloud Trace (OpenTelemetry) iniciado.")
+            logger.info(f"✅ Google Cloud Trace iniciado para el servicio: {os.environ.get('K_SERVICE')}")
         except Exception as e:
             logger.error(f"❌ Error al iniciar Cloud Trace: {e}")
-
+            
 # --- Inicialización ---
 init_gcp_profiler()
 init_cloud_trace()

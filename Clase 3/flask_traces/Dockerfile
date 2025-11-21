@@ -8,6 +8,14 @@ ENV PYTHONUNBUFFERED=1
 # Directorio de trabajo
 WORKDIR /app
 
+# --- NUEVO BLOQUE: Instalar dependencias del sistema ---
+# google-cloud-profiler necesita g++ para compilarse
+RUN apt-get update && apt-get install -y \
+    g++ \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+# -------------------------------------------------------
+
 # Instalar dependencias
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -19,5 +27,4 @@ COPY . .
 ENV PORT=8080
 
 # Comando para ejecutar la aplicación con Gunicorn
-# 1 worker y 8 hilos para permitir concurrencia en Cloud Run
 CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app:app
