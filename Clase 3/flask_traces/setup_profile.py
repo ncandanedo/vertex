@@ -1,4 +1,8 @@
-# --- Imports de Cloud Profiler ---
+# --- Imports de Cloud Profiler --
+# 
+# -
+
+import os 
 try:
     import googlecloudprofiler
 except ImportError:
