@@ -15,30 +15,39 @@
 import logging
 import time
 from random import randint, uniform
-
+import random
 import requests
-from flask import Flask, url_for
-from opentelemetry.instrumentation.flask import FlaskInstrumentor
-from opentelemetry.instrumentation.requests import RequestsInstrumentor
+from flask import Flask, url_for,jsonify
 
 from gcp_logging import setup_structured_logging
 from setup_opentelemetry import setup_opentelemetry
-
+from setup_profile import init_gcp_profiler
 # [START opentelemetry_instrumentation_main]
 logger = logging.getLogger(__name__)
 
 # Initialize OpenTelemetry Python SDK and structured logging
 setup_opentelemetry()
 setup_structured_logging()
-
+init_gcp_profiler(logger)
 app = Flask(__name__)
 
-# Add instrumentation
-FlaskInstrumentor().instrument_app(app)
-RequestsInstrumentor().instrument()
-# [END opentelemetry_instrumentation_main]
 
+@app.route("/heavy")
+def heavy_task():
+    """Simula una tarea pesada para ver en Trace y Profiler."""
 
+    logger.info("Iniciando tarea pesada...")
+    
+    # Simulamos carga de CPU para el Profiler
+    result = 0
+    for _ in range(1_000_000):
+        result += random.random()
+        
+    # Simulamos latencia de red/IO para el Trace
+    time.sleep(0.5) 
+    
+    return jsonify({"message": "Tarea pesada completada", "result": result})
+    
 # [START opentelemetry_instrumentation_handle_multi]
 @app.route("/multi")
 def multi():
