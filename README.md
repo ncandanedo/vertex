@@ -116,3 +116,30 @@ gcloud services enable aiplatform.googleapis.com \
   logging.googleapis.com pubsub.googleapis.com \
   dataflow.googleapis.com composer.googleapis.com \
   cloudfunctions.googleapis.com
+
+---
+
+## Distribución de contenido
+
+
+Las clases estaran distribuidas de la seguiente manera.
+
+Sesión 1: Tema 1 - DONE
+
+Sesión 2: Tema 2 - DONE
+
+Sesión 3: Tema 3 
+
+Sesión 4: Tema 4, Tema 5
+
+Sesión 5: Tema 6, Tema 7
+
+Sesión 6: Tema 8, Tema 9
+
+Sesión 7: Tema 10, Tema 11
+
+Sesión 8: Tema 12
+
+Sesión 9: Tema 13
+
+Sesión 10: Tema 14
