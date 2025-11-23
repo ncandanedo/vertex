@@ -92,3 +92,82 @@ FROM
 
 
 ```
+Opción 1: Consulta Rápida (Para ver la predicción cruda)
+Esta te dirá 1 (Alerta) o 0 (Normal) para cada fila de tu imagen.
+``` Predecir valores BQ
+SELECT
+  server_id,
+  timestamp_col,
+  avg_cpu_last_hour,
+  predicted_is_high_cpu -- 1 = CPU Alta (>80%), 0 = Normal
+FROM
+  ML.PREDICT(MODEL `ml_test.cpu_predictor_model`,
+    (
+      SELECT
+        server_id,
+        timestamp_col,
+        avg_cpu_last_hour,
+        avg_cpu_yesterday
+      FROM
+        `ml_test.server_metrics`
+    )
+  )
+ORDER BY timestamp_col DESC;
+
+```
+
+``` Predecir valores BQ
+
+Opción 2: Consulta "Profesional" (Con Probabilidades)
+Esta es mejor porque te dice qué tan segura está la IA. Por ejemplo, te dirá: "Creo que es Alerta con un 95% de seguridad".
+
+
+SELECT
+  server_id,
+  timestamp_col,
+  avg_cpu_last_hour,
+  
+  -- Traducimos el 1 y 0 a texto
+  CASE 
+    WHEN predicted_is_high_cpu = 1 THEN '🔴 ALERTA'
+    ELSE '🟢 NORMAL'
+  END AS estado,
+
+  -- Mostramos la seguridad de la predicción (Probabilidad)
+  ROUND(probs.prob * 100, 2) as probabilidad_de_alerta_pct
+
+FROM
+  ML.PREDICT(MODEL `ml_test.cpu_predictor_model`,
+    (
+      SELECT
+        server_id,
+        timestamp_col,
+        avg_cpu_last_hour,
+        avg_cpu_yesterday
+      FROM
+        `ml_test.server_metrics`
+    )
+  ),
+  -- Desempaquetamos el array de probabilidades
+  UNNEST(predicted_is_high_cpu_probs) as probs
+
+WHERE probs.label = 1 -- Filtramos para ver la probabilidad de que sea "Alta"
+ORDER BY probabilidad_de_alerta_pct DESC;
+
+```
+
+``` JSON
+{
+  "instances": [
+    {
+      "avg_cpu_last_hour": 95.5,
+      "avg_cpu_yesterday": 88.0
+    },
+    {
+      "avg_cpu_last_hour": 10.2,
+      "avg_cpu_yesterday": 12.5
+    }
+  ]
+}
+
+```
