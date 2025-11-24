@@ -41,33 +41,29 @@ TRUNCATE TABLE `ml_test.server_metrics`;
 
 -- 2. Insert the new correlated data
 
-
-INSERT INTO `ml_test.server_metrics` (server_id, timestamp_col, avg_cpu_last_hour, avg_cpu_yesterday, cpu_usage_percent)
-
-WITH GENERATOR AS (
-  -- Generate 1000 rows
-  SELECT x FROM UNNEST(GENERATE_ARRAY(1, 1000)) AS x
-),
-
-RAW_VALUES AS (
-  -- Pre-calculate the random values here so we can use them in the next step
-  SELECT
-    CONCAT('server_', CAST(FLOOR(1 + RAND() * 5) AS STRING)) AS server_id,
-    TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL CAST(FLOOR(RAND() * 60 * 24) AS INT64) HOUR) AS timestamp_col,
-    ROUND(RAND() * 100, 2) AS generated_last_hour,
-    ROUND(RAND() * 100, 2) AS generated_yesterday
-  FROM
-    GENERATOR
-)
-
+INSERT INTO `formacionaiops-476808`.ml_test.server_metrics(server_id, timestamp_col, avg_cpu_last_hour,
+  avg_cpu_yesterday, cpu_usage_percent)
+WITH
+  GENERATOR AS (
+    SELECT
+      x
+    FROM
+      UNNEST(GENERATE_ARRAY(1, 1000)) AS x
+  ),
+  RAW_VALUES AS (
+    SELECT
+      CONCAT('server_', CAST(FLOOR(1 + RAND() * 5) AS STRING)) AS server_id,
+      TIMESTAMP_SUB(`CURRENT_TIMESTAMP`(), INTERVAL CAST(FLOOR(RAND() * 60 * 24) AS INT64) HOUR) AS timestamp_col,
+      ROUND(RAND() * 100, 2) AS generated_last_hour,
+      ROUND(RAND() * 100, 2) AS generated_yesterday
+    FROM
+      GENERATOR
+  )
 SELECT
   server_id,
   timestamp_col,
   generated_last_hour AS avg_cpu_last_hour,
   generated_yesterday AS avg_cpu_yesterday,
-  
-  -- NOW we can use the value because it comes from the previous step (RAW_VALUES)
-  -- Logic: Current CPU = Last Hour +/- 5% noise
   LEAST(100, GREATEST(0, (generated_last_hour + (RAND() * 10 - 5)))) AS cpu_usage_percent
 FROM
   RAW_VALUES;
