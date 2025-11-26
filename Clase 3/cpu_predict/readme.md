@@ -167,3 +167,52 @@ ORDER BY probabilidad_de_alerta_pct DESC;
 }
 
 ```
+
+
+Para este modelo específico de SQL (LOGISTIC_REG), la respuesta es: Predice el "Siguiente Paso Inmediato".
+
+En detalle:
+
+1. El Horizonte de Tiempo (¿Cuánto futuro?)
+Este modelo NO te dice "Mañana a las 5 PM tendrás un pico".
+
+Este modelo responde a la pregunta: "Basado en lo que acaba de pasar (última hora), ¿estoy en peligro AHORA MISMO o en los próximos minutos?".
+
+Tu Dato de Entrada: avg_cpu_last_hour (Promedio de la última hora).
+
+Tu Predicción: ¿El siguiente dato que venga será mayor de 80%?
+
+El "futuro" depende de la frecuencia con la que llames al modelo:
+
+Si le preguntas cada 5 minutos: Te está prediciendo el riesgo para los próximos 5 minutos.
+
+Si le preguntas cada 1 hora: Te está prediciendo el riesgo para la siguiente hora.
+
+2. Diferencia Clave: El Meteorólogo vs. El Médico
+Para que lo veas claro, comparemos los dos ejercicios que hemos hecho:
+
+Característica	Modelo 1 (Forecasting / Vertex AI)	Modelo 2 (Log. Regression / SQL)
+Tipo	🔮 Meteorólogo	🩺 Médico de Urgencias
+Pregunta	"¿Qué tiempo hará mañana a las 10:00?"	"¿Este paciente está a punto de infartar?"
+Futuro	Largo plazo (24h, 48h, 7 días...)	Inmediato / Corto plazo
+Salida	Una curva de tiempo (Gráfico)	Una Alerta (SÍ/NO)
+Uso ideal	Planificar recursos ("Comprar más servidores para mañana")	Actuar ya ("Reiniciar el servidor AHORA")
+
+Export to Sheets
+
+3. ¿Por qué tu SQL funciona así?
+Fíjate en la fórmula que usaste para generar los datos de entrenamiento en la SQL:
+
+SQL
+
+(generated_last_hour + (RAND() * 10 - 5))
+Esto significa: "El valor futuro será igual al de la última hora, más/menos un pequeño cambio".
+
+Por lo tanto, tu modelo ha aprendido que el futuro inmediato se parece mucho al presente. Si la última hora fue un 95%, el modelo sabe que es matemáticamente muy probable que el siguiente minuto siga siendo alto (Alerta 1).
+
+Resumen
+Este modelo LOGISTIC_REG te dice qué probabilidad hay de que la CPU sature (>80%) en el siguiente ciclo de lectura.
+
+Es perfecto para un sistema de Alertas en Tiempo Real.
+
+Te avisa: "Oye, esto huele a quemado, va a fallar en breve".
