@@ -1,0 +1,1 @@
+git config --global credential.'https://*.*.sourcemanager.dev'.helper gcloud.sh
