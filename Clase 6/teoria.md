@@ -559,3 +559,4 @@ En resumen, AIOps, soportado por Vertex AI y las herramientas de observabilidad 
 Examen: (https://forms.gle/nJBRQWfxHeaQatSn6)
 FeedBack: (https://imagina-formacion.typeform.com/to/IkO83DnN)
 
+SER Book: (https://sre.google/books/)
